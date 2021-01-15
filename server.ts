@@ -7,6 +7,7 @@ import { join } from 'path';
 import { AppServerModule } from './src/main.server';
 import { APP_BASE_HREF } from '@angular/common';
 import { existsSync } from 'fs';
+import { APP_ID } from '@angular/core';
 
 // The Express app is exported so that it can be used by serverless Functions.
 export function app(): express.Express {
@@ -43,6 +44,14 @@ export function app(): express.Express {
       req,
       providers: [{ provide: APP_BASE_HREF, useValue: req.baseUrl }],
     });
+  });
+
+  //take request from client, send to the movie database endpoint
+  server.post('/search', async (req, res) => {
+    let searchQuery = req.body.query;
+    let encSearchQuery = encodeURIComponent(searchQuery);
+    const data = await api.data.search(encSearchQuery, apiKey);
+    res.status(200).json(data);
   });
 
   return server;
